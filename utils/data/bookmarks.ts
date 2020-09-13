@@ -22,18 +22,7 @@ function syncBookmarks(callback: (bookmark: Bookmark[]) => void) {
     });
 }
 
-// async function getBookmarks(): Promise<Bookmark[]> {
-//   const db = firebase.firestore();
-//   const querySnapshot = await db.collection('bookmarks').get();
-//   const bookmarks: Bookmark[] = [];
-//   querySnapshot.forEach((doc) => {
-//     const data = doc.data()
-//     bookmarks.push({id: doc.id, title: data.title, url: data.url})
-//   })
-//   return bookmarks
-// }
-
-const useBookmarks = (): { loading: boolean, bookmarks: Bookmark[] } => {
+export const useBookmarks = (): { loading: boolean, bookmarks: Bookmark[] } => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -51,7 +40,25 @@ const useBookmarks = (): { loading: boolean, bookmarks: Bookmark[] } => {
     return cleanup;
   }, [])
 
+  console.log({ loading, bookmarks });
   return { loading, bookmarks };
 }
 
-export default useBookmarks
+export const updateBookmark = (bookmark: Bookmark) => {
+  if (bookmark.id == null) return;
+  const db = firebase.firestore();
+  const { title, url } = bookmark;
+  db.collection('bookmarks').doc(bookmark.id).set({ title, url });
+}
+
+export const deleteBookmark = (bookmark: Bookmark) => {
+  if (bookmark.id == null) return;
+  const db = firebase.firestore();
+  db.collection('bookmarks').doc(bookmark.id).delete();
+}
+
+export const createBookmark = (bookmark: Bookmark): Promise<void> => {
+  const db = firebase.firestore();
+  return db.collection('bookmarks').add(bookmark).then(() => {});
+}
+
